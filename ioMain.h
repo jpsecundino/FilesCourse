@@ -49,11 +49,14 @@ void secondFuncionality( FILE *binFile );
 This function was made to encapsulate the program's third functionality
 @Arguments:
 	- binFile: pointer to a binary file
-	- optionString:pointer to a string containing the fieldName to be searched for
+	- o: union containing the specified field content
+	- option: indicates the required field to be searched
 @Return:
-	none
+	if an error occurred, -1
+	if the remployee doesn't exists, -2
+	otherwise, the number of pages accessed
 */
-void thirdFunctionality(FILE *binFile, char *optionString);
+int thirdFunctionality(FILE *binFile, Options o, int option);
 
 /**
 This function was made to encapsulate the program's fourth functionality
@@ -186,14 +189,16 @@ void setUnsetFuncs8And9(FILE *firstBinFile, const int mode);
 
 void setUnsetFunc10(FILE *binFile);
 
-void setUnsetFunc11(FILE *binFile);
+int setUnsetFunc11(FILE *binFile);
 
 void setUnsetFunc12(FILE *binFile);
 
 void setUnsetFunc13(FILE *binFile);
 
+void setUnsetFunc14(FILE *binFile);
+
 void tenthFunctionality(FileRegister *inFileRegister, IndexFileRegister *indexFileRegister);
 
-int eleventhFunctionality(FileRegister *indexFileRegister, IndexFileRegister *IndexFileRegister, char *employeeName);
+int eleventhFunctionality(FileRegister *indexFileRegister, IndexFileRegister *IndexFileRegister, char *employeeName, FILE* outStream);
 
 #endif 
