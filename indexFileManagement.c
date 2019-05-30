@@ -176,7 +176,7 @@ void setNumberOfRegisters(IndexFileRegister *indexFileRegister){
 }
 
 int indexBinarySearch(IndexRegister *array, int inf, int sup , char *key){
-    if(inf >= sup) return -1;
+    if(inf > sup) return -1;
 
     int mid = ( inf + sup ) /2;
 
