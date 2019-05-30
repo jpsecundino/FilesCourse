@@ -356,53 +356,54 @@ int returnOptionByString(char *option){
 	return -1;
 }
 
-void printEmployeebyHeader(HeaderRegister *h, EmployeeRegister *e){
+void printEmployeebyHeader(HeaderRegister *h, EmployeeRegister *e, FILE *outputStream){
 	
 	if(e->removido == '*')
 		return;
 	//each of the next five blocks has the same idea behind:
 	//picks the field's metadata from HeaderRegister h and prints it with the content of that field present in EmployeeRegister,
 	//always treating null values and garbage	
-	printf("%s: ", h->desCampo1);
+	fprintf(outputStream,"%s: ", h->desCampo1);
 	if(e->idServidor != -1){
-		printf("%d\n", e->idServidor );
+		fprintf(outputStream,"%d\n", e->idServidor );
 	}else{
-		printf("valor nao declarado\n");
+		fprintf(outputStream,"valor nao declarado\n");
 	}
 
-	printf("%s: ", h->desCampo2);
+	fprintf(outputStream,"%s: ", h->desCampo2);
 	if(e->salarioServidor != -1){
-		printf("%.2lf\n", e->salarioServidor);
+		fprintf(outputStream,"%.2lf\n", e->salarioServidor);
 	}else{
-		printf("valor nao declarado\n");
+		fprintf(outputStream,"valor nao declarado\n");
 	}
 
-	printf("%s: ", h->desCampo3);
+	fprintf(outputStream,"%s: ", h->desCampo3);
 	if(strlen(e->telefoneServidor)){
-		printf("%s\n", e->telefoneServidor );
+		fprintf(outputStream,"%s\n", e->telefoneServidor );
 	}else{
-		printf("valor nao declarado\n");
+		fprintf(outputStream,"valor nao declarado\n");
 	}
 
-	printf("%s: ", h->desCampo4);
+	fprintf(outputStream,"%s: ", h->desCampo4);
 	if(strlen(e->nomeServidor)){
-		printf("%s\n", e->nomeServidor );
+		fprintf(outputStream,"%s\n", e->nomeServidor );
 	}else{
-		printf("valor nao declarado\n");
+		fprintf(outputStream,"valor nao declarado\n");
 	}
 	
-	printf("%s: ", h->desCampo5);
+	fprintf(outputStream,"%s: ", h->desCampo5);
 	if(strlen(e->cargoServidor)){
-		printf("%s\n", e->cargoServidor );
+		fprintf(outputStream,"%s\n", e->cargoServidor );
 	}else{
-		printf("valor nao declarado\n");
+		fprintf(outputStream,"valor nao declarado\n");
 	}
 
-	printf("\n");
+	fprintf(outputStream,"\n");
+	fflush(outputStream);
 }
 
 
-void readEmployeesFromFile(FILE* binFile, Options o, int option){
+int readEmployeesFromFile(FILE* binFile, Options o, int option, const int checkStatus, FILE *outputStream){
 
 	int numPages;
 	int bytesAccessedTotal = 0;
@@ -414,14 +415,14 @@ void readEmployeesFromFile(FILE* binFile, Options o, int option){
 	int flagFound = 0;
 	//counter that counts the number of bytes acccessed during the search
 	int bytesAccessed = 0;
-
+	fseek(binFile, 0, SEEK_SET);
 	//reads the header and puts its info on h
 	readHeaderPage(binFile, h);
 
 	//if we have an inconsistent file, abort
-	if(h->status == '0'){
+	if(h->status == '0' && checkStatus == _TRUE){
 		printf("Falha no processamento do arquivo.");
-		return;
+		return -1;
 	}
 
 	//while we didn't reach the eof
@@ -434,7 +435,7 @@ void readEmployeesFromFile(FILE* binFile, Options o, int option){
 				case 0:
 					if(e->idServidor == o.id){
 						flagExist = 1;
-						printEmployeebyHeader(h, e);
+						printEmployeebyHeader(h, e, outputStream);
 						flagFound = 1;
 					}
 					break;
@@ -442,28 +443,28 @@ void readEmployeesFromFile(FILE* binFile, Options o, int option){
 					if(e->salarioServidor == o.salary){
 						flagExist = 1;
 						flagFound = 1;
-						printEmployeebyHeader(h, e);
+						printEmployeebyHeader(h, e, outputStream);
 					}				
 					break;
 				case 2:
 					if(!strcmp(e->telefoneServidor, o.phone)){
 						flagExist = 1;
 						flagFound = 1;
-						printEmployeebyHeader(h, e);
+						printEmployeebyHeader(h, e, outputStream);
 					}
 					break;
 				case 3:
 					if(!strcmp(e->nomeServidor, o.name)){
 						flagExist = 1;
 						flagFound = 1;
-						printEmployeebyHeader(h, e);
+						printEmployeebyHeader(h, e, outputStream);
 					}
 					break;
 				case 4:
 					if(!strcmp(e->cargoServidor, o.post)){
 						flagExist = 1;
 						flagFound = 1;
-						printEmployeebyHeader(h, e);
+						printEmployeebyHeader(h, e, outputStream);
 					}
 					break;
 					
@@ -493,11 +494,10 @@ void readEmployeesFromFile(FILE* binFile, Options o, int option){
 
 	//if we didn't find any employee
 	if(!flagExist){
-		printf("Registro inexistente.");
-		return;
+		return -2;
 	}
 
-	printf("Número de páginas de disco acessadas: %d\n", numPages );
+	return numPages;
 
 
 }
@@ -1039,7 +1039,7 @@ long long int addNewRegisterInFile(FileRegister *fileRegister, IndexFileRegister
 		newByteOffset = replaceInfoInList(correctPlace, e);
 	}
 
-	if(indexFileRegister != NULL){
+	if(indexFileRegister != NULL && e->indicadorTamanhoNome != 0){
 			addEmployeeInIndexArrayEnd(indexFileRegister,e->nomeServidor,newByteOffset);
 	}
 
@@ -1237,4 +1237,16 @@ void writeHeaderFromRam(FILE *file, HeaderRegister *h){
 	//fills the rest of the page with '@'s
 	putCharOnPage(file,'@', PAGE_SIZE - HEADER_SIZE);
 
+}
+
+int isSamePage(long long int byteOffsetA, long long int byteOffsetB){
+	long long int bigger = byteOffsetA <= byteOffsetB ? byteOffsetB : byteOffsetA;
+	long long int smaller = byteOffsetA <=byteOffsetB ? byteOffsetA : byteOffsetB;
+	
+	//check if there is an multiple of PAGE_SIZE in [smaller, bigger]
+	if((bigger/PAGE_SIZE ) * PAGE_SIZE > smaller ){
+		return _FALSE;
+	}
+
+	return _TRUE;
 }
