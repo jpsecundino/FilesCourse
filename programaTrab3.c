@@ -72,6 +72,9 @@ int main(){
 		case 13:
 			setUnsetFunc13(binFile);
 			break;
+		case 14:
+			setUnsetFunc14(binFile);
+			break;
 
 	}
 
