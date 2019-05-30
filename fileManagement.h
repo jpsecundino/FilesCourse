@@ -30,7 +30,9 @@ Functions made for the first project of File Organization discipline taken at Un
 #define NUM_FIELDS 5
 #define END_STRING 1
 #define METADATA 13
-
+#define _TRUE 1
+#define _FALSE 0
+typedef struct _indexFileRegister IndexFileRegister;
 /**
 Union made to make third functionality easier to implement. 
 It saves the five possible specific inputs of this functionality, one at time.
@@ -273,10 +275,11 @@ Takes the metadata from header and, based on it, prints on the screen the employ
 @Arguments:
 	- h: pointer to a HeaderRegister
 	- e: pointer to a EmployeeRegister
+	- outputStream: indicates what stream will be used to print the result 
 @Return:
 	none
 */
-void printEmployeebyHeader(HeaderRegister *h, EmployeeRegister *e);
+void printEmployeebyHeader(HeaderRegister *h, EmployeeRegister *e, FILE *outputStream);
 
 /**
 Search for employees based on the field indicated by option an described in o.
@@ -284,10 +287,14 @@ Search for employees based on the field indicated by option an described in o.
 	- binFile: pointer to a binary file
 	- o: union containing the specified field content
 	- option: indicates the required field to be searched
+	- checkStatus: seto to TRUE if you want to check the file status or to FALSE otherwise
+	- outputStream: indicates what stream will be used to print the result 
 @Return:
-	none
+	if an error occurred, -1
+	if the remployee doesn't exists, -2
+	otherwise, the number of pages accessed
 */
-void readEmployeesFromFile(FILE* binFile, Options o, int option);
+int readEmployeesFromFile(FILE* binFile, Options o, int option, const int checkStatus, FILE *outputStream);
 
 /**
 Reads the file header and allocates a file register
@@ -615,5 +622,7 @@ EmployeeArray *createEmployeeArray(int size);
  * 		none 	
 */
 void writeHeaderFromRam(FILE* file, HeaderRegister *h);
+
+int isSamePage(long long int byteOffsetA, long long int byteOffsetB);
 
 #endif
