@@ -279,7 +279,7 @@ void thirdFunctionality(FILE *binFile, char *optionString){
 
 }
 
-void fourthFunctionality(FileRegister *fileRegister, LIST *removedList, DataToRemove *data,int dataToRemoveSize){
+void fourthFunctionality(FileRegister *fileRegister, IndexFileRegister *indexFileRegister ,LIST *removedList, DataToRemove *data,int dataToRemoveSize){
 	EmployeeRegister *e;
 	long long int regByteOffSet;
 	fseek(fileRegister->filePointer, PAGE_SIZE, SEEK_SET);
@@ -300,7 +300,12 @@ void fourthFunctionality(FileRegister *fileRegister, LIST *removedList, DataToRe
 				//if this register has the characteristic specified by the querie i:
 				if(hasCharacteristic(e,data[i].o, data[i].option )){
 					e->removido = '*';
-			
+					
+					//if we have an index file
+					if(indexFileRegister!=NULL && e->indicadorTamanhoNome != 0){
+						removeFromIndexFile(indexFileRegister, e->nomeServidor);
+					}			
+
 					insertOrderedList(removedList, e, regByteOffSet, i);
 					removeEmployeeOnFile(fileRegister,e,regByteOffSet);
 
@@ -455,6 +460,39 @@ void ninthFunctionality(FileRegister *firstFileRegister, FileRegister *secondFil
 	destroyEmployeeRegister(employeeOne);
 	destroyEmployeeRegister(employeeTwo);
 }
+
+void tenthFunctionality(FileRegister *inFileRegister, IndexFileRegister *indexFileRegister){
+	makeIndexFromEmployeeFile(inFileRegister->filePointer, indexFileRegister);
+	writeIndexFile(indexFileRegister);
+}
+
+int eleventhFunctionality(FileRegister *inFileRegister, IndexFileRegister *indexFileRegister, char *employeeName){
+	IndexRegister *array = indexFileRegister->indexArray->fileRegisters;
+	int arraySize = indexFileRegister->indexArray->actualSize;
+	int pos = indexBinarySearch(array, 0, arraySize, employeeName);
+	int numPages = 0;
+	EmployeeRegister *e = createEmployeeRegister();
+	if (pos == -1){
+		return -1;
+	}
+	
+	pos = findRepeatedNamesBlockBegin(array, pos, employeeName );
+
+	while(pos < arraySize && strcmp(array[pos].chaveBusca, employeeName) == 0){
+		fseek(inFileRegister->filePointer, array[pos].byteOffset, SEEK_SET);
+		if(readPerson(inFileRegister->filePointer,e)){
+			printEmployeebyHeader(inFileRegister->header, e);
+			pos++;
+			numPages++;
+		}
+		
+	}
+
+	destroyEmployeeRegister(e);
+
+	return numPages;
+}
+
 void setUnsetFunc1(FILE *csv){
 	FILE *binFile;
 
@@ -484,7 +522,7 @@ void setUnsetFunc3(FILE* binFile){
 	thirdFunctionality(binFile, optionString);
 }
 
-void setUnsetFunc4(FILE * binFile){
+int setUnsetFunc4(FILE * binFile, IndexFileRegister * indexFileRegister){
 	int n;
 	FileRegister *fileRegister = createFileRegister(binFile);
 	
@@ -492,7 +530,7 @@ void setUnsetFunc4(FILE * binFile){
 	if(!isConsistent(fileRegister->header)){
 		printf("Falha no processamento do arquivo.");
 		destroyFileRegister(fileRegister);
-		return;
+		return -1;
 	}
 
 	changeFileStatus(fileRegister, '0');
@@ -513,7 +551,7 @@ void setUnsetFunc4(FILE * binFile){
 	}
 
 	//search for and remove the employees
-	fourthFunctionality(fileRegister, removedList, data, n);
+	fourthFunctionality(fileRegister, indexFileRegister, removedList, data, n);
 
 	//after all remotions, update the new removedList in file
 	updateRemovedListOnFile(fileRegister, removedList);
@@ -527,6 +565,8 @@ void setUnsetFunc4(FILE * binFile){
 	free(data);
 	destroyList(removedList);
 	destroyFileRegister(fileRegister);
+
+	return 1;
 }
 
 void setUnsetFunc5(FILE *binFile){
@@ -711,5 +751,112 @@ void setUnsetFuncs8And9(FILE *firstBinFile, const int mode){
 	//close files
 	fclose(secondBinFile);
 	fclose(outBinFile);
+
+}
+
+void setUnsetFunc10(FILE *inFile){
+	char indexFileName[MAX_BUFFER];	
+	scanf("%s", indexFileName);
+
+	FileRegister *inFileRegister = createFileRegister(inFile);
+
+	FILE *indexFile = fopen(indexFileName, "w+b");
+	
+	if(isConsistent(inFileRegister->header) == 0 || indexFile == NULL){
+		printf("Falha no processamento do arquivo.");
+		destroyFileRegister(inFileRegister);
+		return;
+	}
+
+	IndexFileRegister indexFileRegister;
+	initIndexFile(indexFile, &indexFileRegister);
+
+	tenthFunctionality(inFileRegister, &indexFileRegister);
+	changeIndexFileStatus(&indexFileRegister, '1');
+
+	binarioNaTela1(indexFileRegister.filePointer);
+
+	destroyIndexRegisterArray(&indexFileRegister);
+	destroyFileRegister(inFileRegister);
+
+	fclose(indexFile);
+
+}
+
+void setUnsetFunc11(FILE *inFile){
+	int pagesAcessedIndex = 0,
+		pagesAcessedSearching = 0;
+	char indexFileName[MAX_BUFFER],
+			fieldName[MAX_BUFFER],
+			empoyeeName[MAX_BUFFER];
+	
+	scanf("%s %s %[^\r\n]s", indexFileName, fieldName, empoyeeName);
+
+
+	FileRegister *inFileRegister = createFileRegister(inFile);
+
+	FILE *indexFile = fopen(indexFileName, "rb");
+	if(isConsistent(inFileRegister->header) == 0 || indexFile == NULL){
+		printf("Falha no processamento do arquivo.\n");
+		destroyFileRegister(inFileRegister);
+		return;
+	}
+
+	IndexFileRegister indexFileRegister;
+	initIndexFile(indexFile,&indexFileRegister);
+    pagesAcessedIndex = readIndexFile(&indexFileRegister);
+
+	if(pagesAcessedIndex < 0 ){
+		printf("Falha no processamento do arquivo.\n");
+		destroyFileRegister(inFileRegister);
+		destroyIndexRegisterArray(&indexFileRegister);
+		return;
+	}
+
+	pagesAcessedSearching =	eleventhFunctionality(inFileRegister, &indexFileRegister, empoyeeName);
+
+	if(pagesAcessedSearching == -1){
+		printf("Registro inexistente.\n");
+	}else{
+		printf("Número de páginas de disco para carregar o arquivo de índice: %d\n", pagesAcessedIndex);
+		printf("Número de páginas de disco para acessar o arquivo de dados: %d\n", pagesAcessedSearching);
+	}
+
+	destroyFileRegister(inFileRegister);
+	destroyIndexRegisterArray(&indexFileRegister);
+	fclose(indexFileRegister.filePointer);
+}
+
+void setUnsetFunc12(FILE *inFile){
+	char indexFileName[MAX_BUFFER];
+	int pagesAcessedIndex = 0;
+	scanf("%s ", indexFileName);
+	FILE *indexFile = fopen(indexFileName, "r+b");
+
+	if(indexFile == NULL){
+		printf("Falha no processamento do arquivo.\n");
+		return;
+	}
+
+	IndexFileRegister indexFileRegister;
+	initIndexFile(indexFile,&indexFileRegister);
+    pagesAcessedIndex = readIndexFile(&indexFileRegister);
+	
+	if(pagesAcessedIndex < 0 ){
+		printf("Falha no processamento do arquivo.\n");
+		destroyIndexRegisterArray(&indexFileRegister);
+		return;
+	}
+
+	if(setUnsetFunc4(inFile, &indexFileRegister)){
+		indexFile = fopen(indexFileName, "wb");
+		indexFileRegister.filePointer = indexFile;
+		changeIndexFileStatus(&indexFileRegister , '0');
+		writeIndexFile(&indexFileRegister);
+		changeIndexFileStatus(&indexFileRegister , '1');
+	}
+
+	destroyIndexRegisterArray(&indexFileRegister);
+	fclose(indexFileRegister.filePointer);
 
 }

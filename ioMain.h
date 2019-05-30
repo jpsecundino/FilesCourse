@@ -7,10 +7,12 @@ File made to simplify the main function visualization
 #include <stdio.h>
 #include <stdlib.h>
 #include "fileManagement.h"
+#include "indexFileManagement.h"
 #ifndef IO_PROG_TRAB2
 #define IO_PROG_TRAB2
 #define MERGE 0
 #define MATCH 1
+
 /**
 Reads a specific register field from stdin
 @Arguments:
@@ -61,7 +63,7 @@ This function was made to encapsulate the program's fourth functionality
 @Return:
 	none
 */
-void fourthFunctionality(FileRegister *fileRegister, LIST *removedList, DataToRemove *data,int dataToRemoveSize);
+void fourthFunctionality(FileRegister *fileRegister, IndexFileRegister *indexFileRegister,LIST *removedList, DataToRemove *data,int dataToRemoveSize);
 
 /**
 This function was made to encapsulate the program's fifth functionality
@@ -130,9 +132,10 @@ This function was made to prepare and clean all the needs of fourth functionalit
 @Arguments:
 	- binFile: pointer to a bin file
 @Return:
-	none
+	1 if success
+	-1 otherwise
 */
-void setUnsetFunc4(FILE * binFile);
+int setUnsetFunc4(FILE * binFile, IndexFileRegister *indexFileRegister);
 
 /**
 This function was made to prepare and clean all the needs of fifth functionality
@@ -172,5 +175,15 @@ This function was made to prepare and clean all the needs of eighth and ninth fu
 	none
 */
 void setUnsetFuncs8And9(FILE *firstBinFile, const int mode);
+
+void setUnsetFunc10(FILE *binFile);
+
+void setUnsetFunc11(FILE *binFile);
+
+void setUnsetFunc12(FILE *binFile);
+
+void tenthFunctionality(FileRegister *inFileRegister, IndexFileRegister *indexFileRegister);
+
+int eleventhFunctionality(FileRegister *indexFileRegister, IndexFileRegister *IndexFileRegister, char *employeeName);
 
 #endif 

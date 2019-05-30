@@ -43,7 +43,7 @@ int main(){
 			setUnsetFunc3(binFile);
 			break;
 		case 4:
-			setUnsetFunc4(binFile);
+			setUnsetFunc4(binFile, NULL);
 			break;
 		case 5:
 			setUnsetFunc5(binFile);
@@ -60,6 +60,16 @@ int main(){
 		case 9:
 			setUnsetFuncs8And9(binFile, MATCH);
 			break;
+		case 10:
+			setUnsetFunc10(binFile);
+			break;
+		case 11:
+			setUnsetFunc11(binFile);
+			break;
+		case 12:
+			setUnsetFunc12(binFile);
+			break;
+
 	}
 
 	fclose(binFile);
