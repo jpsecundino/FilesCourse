@@ -12,6 +12,8 @@ File made to simplify the main function visualization
 #define IO_PROG_TRAB2
 #define MERGE 0
 #define MATCH 1
+#define PRINT 1
+#define NOT_PRINT 0
 
 /**
 Reads a specific register field from stdin
@@ -70,10 +72,11 @@ This function was made to encapsulate the program's fifth functionality
 @Arguments:
 	- fileRegister: pointer to a fileRegister
     - removedList: pointer to a list containing all the removed register from the file
+	- pointer to a index file register if it exists
 @Return:
 	none
 */
-void fifthFunctionality(FileRegister *fileRegister, LIST *removedList);
+void fifthFunctionality(FileRegister *fileRegister, IndexFileRegister *IndexFileRegister,LIST *removedList);
 
 /**
 This function was made to encapsulate the program's sixth functionality
@@ -131,20 +134,25 @@ void setUnsetFunc3(FILE *binFile);
 This function was made to prepare and clean all the needs of fourth functionality
 @Arguments:
 	- binFile: pointer to a bin file
+	- indexFileRegister: pointer to an index file register if it exists (can be NULL)
+	- printHexFile: set PRINT if you want to print binFile HEX or NOT_PRINT othwerwise
 @Return:
 	1 if success
 	-1 otherwise
 */
-int setUnsetFunc4(FILE * binFile, IndexFileRegister *indexFileRegister);
+int setUnsetFunc4(FILE * binFile, IndexFileRegister *indexFileRegister, int printHexFile);
 
 /**
 This function was made to prepare and clean all the needs of fifth functionality
 @Arguments:
 	- binFile: pointer to a bin file
+	- indexFileRegister: pointer to an index file register if it exists (can be NULL)
+	- printHexFile: set PRINT if you want to print binFile HEX or NOT_PRINT othwerwise
 @Return:
-	none
+	1 if success
+	-1 otherwise
 */
-void setUnsetFunc5(FILE *binFile);
+int setUnsetFunc5(FILE *binFile, IndexFileRegister *indexFileRegister, int printHexFile);
 
 /**
 This function was made to prepare and clean all the needs of sixth functionality
@@ -181,6 +189,8 @@ void setUnsetFunc10(FILE *binFile);
 void setUnsetFunc11(FILE *binFile);
 
 void setUnsetFunc12(FILE *binFile);
+
+void setUnsetFunc13(FILE *binFile);
 
 void tenthFunctionality(FileRegister *inFileRegister, IndexFileRegister *indexFileRegister);
 

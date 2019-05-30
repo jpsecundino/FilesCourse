@@ -1,10 +1,13 @@
 #ifndef INDEX_FILE_MANAGEMENT
 #define INDEX_FILE_MANAGEMENT
-#include<stdio.h>
 #include "fileManagement.h"
 #define SIZE_CHAVE_BUSCA 120
 #define SIZE_NRO_REG 4
 #define NUM_REG_OFFSET 1
+#define MAX_BUFFER_SIZE 250
+#define INDEX_PAGE_SIZE 32000
+#define STATUS_TAG_SIZE 1
+#define END_STRING_TOKEN 1
 
 typedef struct _indexFileHeader{
     char status;
@@ -50,4 +53,5 @@ int isIndexConsistent(IndexHeader *header );
 int findRepeatedNamesBlockBegin(IndexRegister *array,int initialPos, char *employeeName);
 void removeFromIndexFile(IndexFileRegister *indexFileRegister, char *employeeName );
 void changeIndexFileNumReg(IndexFileRegister *indexFileRegister, int numReg);
+void addEmployeeInIndexArrayEnd(IndexFileRegister *indexFileRegister, char *employeeName , long long int byteOffset);
 #endif

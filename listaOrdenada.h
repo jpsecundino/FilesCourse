@@ -75,9 +75,9 @@ Updates a element
 	- correctPlace: the node to be updated
 	- e: the register that will fill the element
 @Return:
-	none
+	return the new register's byte offset
 */
-void replaceInfoInList(NODE *correctPlace, EmployeeRegister *e);
+long long int replaceInfoInList(NODE *correctPlace, EmployeeRegister *e);
 
 /**
 Remove a node from list

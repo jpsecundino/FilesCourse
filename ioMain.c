@@ -321,10 +321,10 @@ void fourthFunctionality(FileRegister *fileRegister, IndexFileRegister *indexFil
 
 }
 
-void fifthFunctionality(FileRegister *fileRegister, LIST *removedList){
+void fifthFunctionality(FileRegister *fileRegister, IndexFileRegister *indexFileRegister, LIST *removedList){
 	EmployeeRegister *e = createEmployeeRegister();
 	readEmployeeFromInput(e);
-	addNewRegisterInFile(fileRegister, removedList, e);
+	addNewRegisterInFile(fileRegister, indexFileRegister, removedList, e);
 	destroyEmployeeRegister(e);
 }
 
@@ -359,7 +359,7 @@ void sixthFunctionality(FileRegister *fileRegister, LIST *removedList){
 				changeEmployeePost(it->employeeInfo.employeeRegister, o.post);
 			}
 			
-			addNewRegisterInFile(fileRegister, removedList, it->employeeInfo.employeeRegister);
+			addNewRegisterInFile(fileRegister, NULL,removedList, it->employeeInfo.employeeRegister);
 		}
 		it = it->next;
 	}
@@ -522,7 +522,7 @@ void setUnsetFunc3(FILE* binFile){
 	thirdFunctionality(binFile, optionString);
 }
 
-int setUnsetFunc4(FILE * binFile, IndexFileRegister * indexFileRegister){
+int setUnsetFunc4(FILE * binFile, IndexFileRegister * indexFileRegister, int printHexFile){
 	int n;
 	FileRegister *fileRegister = createFileRegister(binFile);
 	
@@ -558,8 +558,8 @@ int setUnsetFunc4(FILE * binFile, IndexFileRegister * indexFileRegister){
 	
 	changeFileStatus(fileRegister, '1');
 	
-	//print the file
-	binarioNaTela1(fileRegister->filePointer);
+	if(printHexFile == PRINT)
+		binarioNaTela1(fileRegister->filePointer);
 	
 	//destroy used data structures
 	free(data);
@@ -569,14 +569,14 @@ int setUnsetFunc4(FILE * binFile, IndexFileRegister * indexFileRegister){
 	return 1;
 }
 
-void setUnsetFunc5(FILE *binFile){
+int setUnsetFunc5(FILE *binFile, IndexFileRegister *indexFileRegister, int printHexFile){
 	int n;
 	//checking if the file is
 	FileRegister *fileRegister = createFileRegister(binFile);		
 	if(!isConsistent(fileRegister->header)){
 		printf("Falha no processamento do arquivo.");
 		destroyFileRegister(fileRegister);
-		return;
+		return -1;
 	}
 
 	LIST *removedList = createList();
@@ -588,7 +588,7 @@ void setUnsetFunc5(FILE *binFile){
 
 	scanf("%d", &n);
 	for(int i = 0; i < n; i++){
-		fifthFunctionality(fileRegister, removedList);
+		fifthFunctionality(fileRegister, indexFileRegister, removedList);
 	}
 
 	//after all done, update the new removedList in file
@@ -596,13 +596,20 @@ void setUnsetFunc5(FILE *binFile){
 	//update the changed registers in file
 	addReplacedRegistersOnFile(fileRegister, removedList);
 
+	if(indexFileRegister != NULL){
+		sortIndexes(indexFileRegister);
+	}
+
 	changeFileStatus(fileRegister, '1');
 
 	//print the file
-	binarioNaTela1(fileRegister->filePointer);
+	if(printHexFile == PRINT)
+		binarioNaTela1(fileRegister->filePointer);
 
 	destroyList(removedList);
 	destroyFileRegister(fileRegister);
+
+	return 1;
 }
 
 void setUnsetFunc6(FILE *binFile){
@@ -848,13 +855,51 @@ void setUnsetFunc12(FILE *inFile){
 		return;
 	}
 
-	if(setUnsetFunc4(inFile, &indexFileRegister)){
-		indexFile = fopen(indexFileName, "wb");
+	if(setUnsetFunc4(inFile, &indexFileRegister, NOT_PRINT)){
+		indexFile = fopen(indexFileName, "w+b");
 		indexFileRegister.filePointer = indexFile;
 		changeIndexFileStatus(&indexFileRegister , '0');
 		writeIndexFile(&indexFileRegister);
 		changeIndexFileStatus(&indexFileRegister , '1');
 	}
+
+	binarioNaTela1(indexFileRegister.filePointer);
+
+	destroyIndexRegisterArray(&indexFileRegister);
+	fclose(indexFileRegister.filePointer);
+
+}
+
+void setUnsetFunc13(FILE *inFile){
+	char indexFileName[MAX_BUFFER];
+	int pagesAcessedIndex = 0;
+	scanf("%s ", indexFileName);
+	FILE *indexFile = fopen(indexFileName, "r+b");
+
+	if(indexFile == NULL){
+		printf("Falha no processamento do arquivo.\n");
+		return;
+	}
+
+	IndexFileRegister indexFileRegister;
+	initIndexFile(indexFile,&indexFileRegister);
+    pagesAcessedIndex = readIndexFile(&indexFileRegister);
+	
+	if(pagesAcessedIndex < 0 ){
+		printf("Falha no processamento do arquivo.\n");
+		destroyIndexRegisterArray(&indexFileRegister);
+		return;
+	}
+
+	if(setUnsetFunc5(inFile, &indexFileRegister, NOT_PRINT)){
+		indexFile = fopen(indexFileName, "w+b");
+		indexFileRegister.filePointer = indexFile;
+		changeIndexFileStatus(&indexFileRegister , '0');
+		writeIndexFile(&indexFileRegister);
+		changeIndexFileStatus(&indexFileRegister , '1');
+	}
+
+	binarioNaTela1(indexFileRegister.filePointer);
 
 	destroyIndexRegisterArray(&indexFileRegister);
 	fclose(indexFileRegister.filePointer);

@@ -601,7 +601,7 @@ void realRemoveEmployee(FileRegister *fileRegister, LIST *removedList ){
 	}
 }
 
-void insertEndFile(FileRegister *fileRegister, EmployeeRegister *e){
+long long int insertEndFile(FileRegister *fileRegister, EmployeeRegister *e){
 	fseek(fileRegister->filePointer,0,SEEK_END);
 	long long int lastOffSet = ftell(fileRegister->filePointer);
 	int lastRegSize,
@@ -626,6 +626,7 @@ void insertEndFile(FileRegister *fileRegister, EmployeeRegister *e){
 	}
 	fileRegister->lastRegisterByteOffSet = ftell(fileRegister->filePointer);
 	addEmployeeInFile(fileRegister->filePointer, e->tamanhoRegistro, e);
+	return fileRegister->lastRegisterByteOffSet;
 }
 
 void scan_quote_string(char *str) {
@@ -762,8 +763,7 @@ void binarioNaTela1(FILE *ponteiroArquivoBinario) {
 	fseek(ponteiroArquivoBinario, 0, SEEK_SET);
 	
 	mb = (unsigned char *) malloc(fl);
-	
-	fread(mb, 1, fl, ponteiroArquivoBinario);
+	fread(mb, sizeof(char), fl, ponteiroArquivoBinario);
 	
 	for(i = 0; i < fl; i += sizeof(unsigned char)) {
 		printf("%02X ", mb[i]);
@@ -1030,14 +1030,20 @@ int changeEmployeePostOnFile(FileRegister *fileRegister, EmployeeRegister *e, lo
 	return 1;
 }
 
-void addNewRegisterInFile(FileRegister *fileRegister, LIST *removedList, EmployeeRegister *e){
+long long int addNewRegisterInFile(FileRegister *fileRegister, IndexFileRegister *indexFileRegister,LIST *removedList, EmployeeRegister *e){
 	NODE* correctPlace = greaterEqualRegisterInList(removedList, e);
-
+	long long int newByteOffset = 0;
 	if(!correctPlace){
-		insertEndFile(fileRegister, e);
+		newByteOffset = insertEndFile(fileRegister, e);
 	}else{
-		replaceInfoInList(correctPlace, e);
+		newByteOffset = replaceInfoInList(correctPlace, e);
 	}
+
+	if(indexFileRegister != NULL){
+			addEmployeeInIndexArrayEnd(indexFileRegister,e->nomeServidor,newByteOffset);
+	}
+
+	return newByteOffset;
 }
 
 void changeEmployeeName(EmployeeRegister *e, char *name){

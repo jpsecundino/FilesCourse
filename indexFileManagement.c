@@ -4,7 +4,7 @@ int initIndexFile(FILE *indexFile, IndexFileRegister *indexFileRegister){
     IndexHeader h = {'0', 0};
     indexFileRegister->fileHeader = h;
     indexFileRegister->filePointer = indexFile;
-    indexFileRegister->indexArray = createIndexRegisterArray(MAX_BUFFER);
+    indexFileRegister->indexArray = createIndexRegisterArray(MAX_BUFFER_SIZE);
 
     if(indexFileRegister->indexArray == NULL ){
         return 0;
@@ -66,7 +66,7 @@ int readIndexesFromIndexFile(IndexFileRegister * indexFileRegister){
     int arrayIt;
     FILE *file = indexFileRegister->filePointer;
     
-    fseek(file, PAGE_SIZE, SEEK_SET );
+    fseek(file, INDEX_PAGE_SIZE, SEEK_SET );
     while(!feof(file)){
         if(readIndexRegisterFromIndexFile(file, &ir) ){
             
@@ -83,7 +83,7 @@ int readIndexesFromIndexFile(IndexFileRegister * indexFileRegister){
         }
     }
 
-    return myCeil((double)ftell(file)/(double)PAGE_SIZE) -1;
+    return myCeil((double)ftell(file)/(double)INDEX_PAGE_SIZE) -1;
 }
 
 int readIndexFile(IndexFileRegister *indexFileRegister){
@@ -123,41 +123,24 @@ void writeIndexHeader(IndexFileRegister *indexFileRegister){
     fseek(indexFileRegister->filePointer, 0, SEEK_SET);
     fwrite(&indexFileRegister->fileHeader.status, sizeof(char), 1, indexFileRegister->filePointer);
     fwrite(&indexFileRegister->fileHeader.nroRegistros, sizeof(int), 1, indexFileRegister->filePointer);
-    putCharOnPage(indexFileRegister->filePointer, '@', PAGE_SIZE - SIZE_NRO_REG - TAG_SIZE);
+    putCharOnPage(indexFileRegister->filePointer, '@', INDEX_PAGE_SIZE - SIZE_NRO_REG - STATUS_TAG_SIZE);
 }
 
 //the index doesnt exist yet in any place
 void makeIndexFromEmployeeFile(FILE *employeeFile, IndexFileRegister *indexFileRegister){
     EmployeeRegister *e = createEmployeeRegister();
     long long int employeeByteOffset;
-    int arrayIt = 0,
-        bufferSize = 0;
-    char auxBuffer[MAX_BUFFER] = {};
-    fseek(employeeFile, PAGE_SIZE, SEEK_SET);
+
+    fseek(employeeFile, INDEX_PAGE_SIZE, SEEK_SET);
     while(!feof(employeeFile)){
         employeeByteOffset = ftell(employeeFile);
         if(readPerson(employeeFile,e)){
-
-            if(indexFileRegister->indexArray->actualSize == indexFileRegister->indexArray->totalSize){
-                reallocIndexRegisterArray(indexFileRegister);
-            }
-
             if(e->indicadorTamanhoNome != 0 && e->removido != '*'){
-                //preparing the key
-                strcpy(auxBuffer, e->nomeServidor);
-                bufferSize = strlen(auxBuffer) + END_STRING;
-                //filling it with '@'
-                fillWithChar(auxBuffer + bufferSize, '@', SIZE_CHAVE_BUSCA - bufferSize);
-
-                arrayIt = indexFileRegister->indexArray->actualSize;
-                indexFileRegister->indexArray->fileRegisters[arrayIt].byteOffset = employeeByteOffset;
-                indexFileRegister->indexArray->fileRegisters[arrayIt].removed = e->removido;
-                memcpy(indexFileRegister->indexArray->fileRegisters[arrayIt].chaveBusca, auxBuffer, SIZE_CHAVE_BUSCA*sizeof(char));
-                
-                indexFileRegister->indexArray->actualSize++;
+                addEmployeeInIndexArrayEnd(indexFileRegister, e->nomeServidor, employeeByteOffset);
             }
         }
     }
+    
     setNumberOfRegisters(indexFileRegister);
 
     sortIndexes(indexFileRegister);
@@ -240,4 +223,27 @@ void removeFromIndexFile(IndexFileRegister *indexFileRegister, char *employeeNam
 void changeIndexFileNumReg(IndexFileRegister *indexFileRegister, int numReg){
     fseek(indexFileRegister->filePointer, NUM_REG_OFFSET, SEEK_SET );
     fwrite(&numReg, sizeof(int), 1, indexFileRegister->filePointer);
+}
+
+void addEmployeeInIndexArrayEnd(IndexFileRegister *indexFileRegister, char *employeeName, long long int employeeByteOffset){
+    int arrayIt = 0,
+    bufferSize = 0;
+    char auxBuffer[MAX_BUFFER_SIZE] = {};
+    
+    //preparing the key
+    strcpy(auxBuffer, employeeName);
+    bufferSize = strlen(auxBuffer) + END_STRING_TOKEN;
+    //filling it with '@'
+    fillWithChar(auxBuffer + bufferSize, '@', SIZE_CHAVE_BUSCA - bufferSize);
+
+    if(indexFileRegister->indexArray->actualSize == indexFileRegister->indexArray->totalSize){
+        reallocIndexRegisterArray(indexFileRegister);
+    }
+    
+    arrayIt = indexFileRegister->indexArray->actualSize;
+    indexFileRegister->indexArray->fileRegisters[arrayIt].byteOffset = employeeByteOffset;
+    indexFileRegister->indexArray->fileRegisters[arrayIt].removed = '-';
+    memcpy(indexFileRegister->indexArray->fileRegisters[arrayIt].chaveBusca, auxBuffer, SIZE_CHAVE_BUSCA*sizeof(char));
+    
+    indexFileRegister->indexArray->actualSize++;
 }

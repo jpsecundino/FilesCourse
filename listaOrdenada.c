@@ -194,13 +194,13 @@ NODE *greaterEqualRegisterInList(LIST *l, EmployeeRegister *e){
 
 }
 
-void replaceInfoInList(NODE *correctPlace, EmployeeRegister *e){
+long long int replaceInfoInList(NODE *correctPlace, EmployeeRegister *e){
 
 	EmployeeRegister *aux = correctPlace->employeeInfo.employeeRegister;
 	int oldRegisterSize = aux->tamanhoRegistro; 
 	copyRegisterContent(aux, e);
 	aux->tamanhoRegistro = oldRegisterSize;
-
+	return correctPlace->employeeInfo.byteOffSet;
 }
 
 int removeElemByRef(LIST *l, NODE *x){

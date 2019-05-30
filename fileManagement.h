@@ -5,12 +5,13 @@ Functions made for the first project of File Organization discipline taken at Un
 		  Giovani Decico Lucafó 10288779
 		  
 */
-#include "listaOrdenada.h"
+#ifndef FILE_MANAGEMENT
+#define FILE_MANAGEMENT 
 #include<string.h>
 #include<stdlib.h>
 #include<stdio.h>
-#ifndef FILE_MANAGEMENT
-#define FILE_MANAGEMENT 
+#include "listaOrdenada.h"
+#include "indexFileManagement.h"
 #define ENTRY_SIZE 10003
 #define FILE_NAME_SIZE 30
 #define MAX_BUFFER 500
@@ -369,7 +370,7 @@ Insert a register in the file's end
 @Return:
 	none
 */
-void insertEndFile(FileRegister *fileRegister, EmployeeRegister *e);
+long long int insertEndFile(FileRegister *fileRegister, EmployeeRegister *e);
 
 /**
 Prints the file content as hexadecimal in stdout
@@ -519,10 +520,11 @@ Adds a new register in file
 	- fileRegister: pointer to a file register
 	- removedList: pointer to a that ontains the file removed registers
 	- e: pointer to employee register that will be updated
+	- indexFileRegister : pointer to a index file register fo fileRegister if it exists
 @Return:
-	none
+	new register's byteOffset
 */
-void addNewRegisterInFile(FileRegister *fileRegister, LIST *removedList, EmployeeRegister *e);
+long long int addNewRegisterInFile(FileRegister *fileRegister, IndexFileRegister *indexFileRegister,LIST *removedList, EmployeeRegister *e);
 
 /**
 Search for the last element of the whole file and save its byteoffset in fileRegister
