@@ -1,7 +1,9 @@
 /*
-Functions made for the first project of File Organization discipline taken at University of Sao Paulo - Sao Carlos, Brazil
-@Author: João Pedro Almeida Santos Secundino 
-@USP Number: 10692054
+Functions made to manipulate files for projects of File Organization discipline taken at University of Sao Paulo - Sao Carlos, Brazil
+
+@Authors: João Pedro Almeida Santos Secundino 10692054
+		  Giovani Decico Lucafó 10288779
+		  
 */
 #include<ctype.h>
 #include"fileManagement.h"
@@ -421,8 +423,8 @@ int readEmployeesFromFile(FILE* binFile, Options o, int option, const int checkS
 
 	//if we have an inconsistent file, abort
 	if(h->status == '0' && checkStatus == _TRUE){
-		printf("Falha no processamento do arquivo.");
-		return -1;
+		fprintf(outputStream,"Falha no processamento do arquivo.");
+		return 1;
 	}
 
 	//while we didn't reach the eof
@@ -494,7 +496,7 @@ int readEmployeesFromFile(FILE* binFile, Options o, int option, const int checkS
 
 	//if we didn't find any employee
 	if(!flagExist){
-		return -2;
+		fprintf(outputStream,"Registro inexistente.\n");
 	}
 
 	return numPages;

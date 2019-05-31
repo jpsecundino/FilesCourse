@@ -1,10 +1,11 @@
 /*
-Functions made for the first project of File Organization discipline taken at University of Sao Paulo - Sao Carlos, Brazil
+Functions made to manipulate files for projects of File Organization discipline taken at University of Sao Paulo - Sao Carlos, Brazil
 
 @Authors: João Pedro Almeida Santos Secundino 10692054
 		  Giovani Decico Lucafó 10288779
 		  
 */
+
 #ifndef FILE_MANAGEMENT
 #define FILE_MANAGEMENT 
 #include<string.h>
@@ -290,9 +291,7 @@ Search for employees based on the field indicated by option an described in o.
 	- checkStatus: seto to TRUE if you want to check the file status or to FALSE otherwise
 	- outputStream: indicates what stream will be used to print the result 
 @Return:
-	if an error occurred, -1
-	if the remployee doesn't exists, -2
-	otherwise, the number of pages accessed
+	number of accessed pages
 */
 int readEmployeesFromFile(FILE* binFile, Options o, int option, const int checkStatus, FILE *outputStream);
 
@@ -623,6 +622,15 @@ EmployeeArray *createEmployeeArray(int size);
 */
 void writeHeaderFromRam(FILE* file, HeaderRegister *h);
 
+/**
+ * Check if teo byteoffsets are in the same file page
+ * @Arguments
+ * 		- byteOffsetA: first byte offset
+ * 		- byteoffsetB: secon byte offset
+ * @Return:
+ * 		1 if they are in the same page
+ * 		0 otherwise
+*/
 int isSamePage(long long int byteOffsetA, long long int byteOffsetB);
 
 #endif

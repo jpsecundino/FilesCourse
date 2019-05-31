@@ -14,6 +14,8 @@ File made to simplify the main function visualization
 #define MATCH 1
 #define PRINT 1
 #define NOT_PRINT 0
+#define REMOVE 0
+#define INSERT 1
 
 /**
 Reads a specific register field from stdin
@@ -52,9 +54,7 @@ This function was made to encapsulate the program's third functionality
 	- o: union containing the specified field content
 	- option: indicates the required field to be searched
 @Return:
-	if an error occurred, -1
-	if the remployee doesn't exists, -2
-	otherwise, the number of pages accessed
+	number of pages accessed
 */
 int thirdFunctionality(FILE *binFile, Options o, int option);
 
@@ -187,18 +187,101 @@ This function was made to prepare and clean all the needs of eighth and ninth fu
 */
 void setUnsetFuncs8And9(FILE *firstBinFile, const int mode);
 
+/**
+This function was made to prepare and clean all the needs of tenth functionality
+@Arguments:
+	- binFile: pointer to a bin file containing an employee file
+@Return:
+	none
+*/
 void setUnsetFunc10(FILE *binFile);
 
+/**
+This function was made to prepare and clean all the needs of eleventh functionality
+@Arguments:
+	- binFile: pointer to a bin file containing an employee file
+@Return:
+	-1 if an error occurred
+	 1 otherwise
+*/
 int setUnsetFunc11(FILE *binFile);
 
-void setUnsetFunc12(FILE *binFile);
+/**
+This function was made to prepare and clean all the needs of twelfth and thirteenth functionalities
+@Arguments:
+	- binFile: pointer to a bin file containing an employee file
+	- mode: indicates what functionality to use
+		REMOVE: will call the fourth functionality, but now with an index file
+		INSERT: will call the fifth functionality, but now with an index file
+@Return:
+	none
+*/
+void setUnsetFunc12And13(FILE *binFile, const int mode);
 
-void setUnsetFunc13(FILE *binFile);
-
+/**
+This function was made to prepare and clean all the needs of fourteenth functionality
+@Arguments:
+	- binFile: pointer to a bin file containing an employee file
+@Return:
+	none
+*/
 void setUnsetFunc14(FILE *binFile);
 
+/**
+This function was made to encapsulate the program's tenth functionality: create an index file from an file full of employee info
+@Arguments:
+	- inFileRegister: pointer to an employee file register containing employee records
+	- indexFileRegister: pointer to an index file register that will index the employee file
+@Return:
+	none
+*/
 void tenthFunctionality(FileRegister *inFileRegister, IndexFileRegister *indexFileRegister);
 
-int eleventhFunctionality(FileRegister *indexFileRegister, IndexFileRegister *IndexFileRegister, char *employeeName, FILE* outStream);
+/**
+This function was made to encapsulate the program's eleventh functionality: search records using index file
+@Arguments:
+	- inFileRegister: pointer to an employee file register containing employee records
+	- indexFileRegister: pointer to an index file register that indexes the employeeFile
+	- employeeName: string containing the name of employee to be searched
+	- pagesAccessedIndex: number of pages accessed during the access to index file //!
+	- outStream: pointer to a stream that will receive the output of functionality
+@Return:
+	number of pages accessed on user screen
+*/
+int eleventhFunctionality(FileRegister *fileRegister, IndexFileRegister *indexFileRegister, char *employeeName, int pagesAccessedIndex, FILE* outStream);
 
+/**
+This function was made to encapsulate the program's twelfth functionality: remove registers using index file
+@Arguments:
+	- inFile: pointer to an employee file containing employee records
+	- indexFileRegister: pointer to an index file register that indexes inFile
+	- indexFileName: name of index File //!
+@Return:
+	none
+*/
+void twelfthFunctionality(FILE *inFile, IndexFileRegister *indexFileRegister, char *indexFileName);
+
+/**
+This function was made to encapsulate the program's thirteenth functionality: insert registers using index file
+@Arguments:
+	- inFile: pointer to an employee file containing employee records
+	- indexFileRegister: pointer to an index file register that indexes inFile
+	- indexFileName: name of index File //!
+@Return:
+	none
+*/
+void thirteenthFunctionality(FILE *inFile, IndexFileRegister *indexFileRegister, char *indexFileName);
+
+/**
+This function was made to encapsulate the program's fourteenth functionality: compare functionalities 3 and 11
+@Arguments:
+	- inFileRegister: pointer to an employee file register containing employee records
+	- indexFileRegister: pointer to an index file register that indexes the employeeFile
+	- employeeName: string containing the name of employee to be searched
+	- pagesAccessedIndex: number of pages accessed during the access to index file //!
+	- outStream: pointer to a stream that will receive the output of functionality
+@Return:
+	Print statistics about the two search methods on user's screen
+*/
+void fourteenthFunctionality(FileRegister *inFileRegister, IndexFileRegister *indexFileRegister, char *employeeName, int pagesAccessedIndex);
 #endif 
