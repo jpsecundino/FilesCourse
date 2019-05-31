@@ -869,8 +869,8 @@ int setUnsetFunc11(FILE *inFile){
 	int pagesAccessedIndex = 0,
 		pagesAccessedSearching = 0;
 	char indexFileName[MAX_BUFFER],
-			fieldName[MAX_BUFFER],
-			employeeName[MAX_BUFFER];
+	     fieldName[MAX_BUFFER],
+	     employeeName[MAX_BUFFER];
 	
 	scanf("%s %s %[^\r\n]s", indexFileName, fieldName, employeeName);
 	char *outStreamBuffer;
@@ -891,7 +891,7 @@ int setUnsetFunc11(FILE *inFile){
 	initIndexFileRegister(indexFile,&indexFileRegister);
 	    //check for consistency
 
-    pagesAccessedIndex = readIndexFile(&indexFileRegister);
+    	pagesAccessedIndex = readIndexFile(&indexFileRegister);
 	//looking for errors 
 	if(isIndexConsistent(&indexFileRegister.fileHeader) == 0){
 		printf("Falha no processamento do arquivo.\n");
@@ -953,8 +953,8 @@ void setUnsetFunc12And13(FILE *inFile, const int mode){
 void setUnsetFunc14(FILE *inFile){
 	int pagesAccessedIndex = 0;
 	char indexFileName[MAX_BUFFER],
-			fieldName[MAX_BUFFER],
-			employeeName[MAX_BUFFER];
+	     fieldName[MAX_BUFFER],
+             employeeName[MAX_BUFFER];
 	
 	scanf("%s %s %[^\r\n]s", indexFileName, fieldName, employeeName);
 	
@@ -972,7 +972,8 @@ void setUnsetFunc14(FILE *inFile){
 	//create a index file register to manipulate the index file
 	IndexFileRegister indexFileRegister;
 	initIndexFileRegister(indexFile,&indexFileRegister);
-    pagesAccessedIndex = readIndexFile(&indexFileRegister);
+        pagesAccessedIndex = readIndexFile(&indexFileRegister);
+	
 	//looking for incosistency
 	if(isIndexConsistent(&indexFileRegister.fileHeader) == 0 ){
 		printf("Falha no processamento do arquivo.\n");
